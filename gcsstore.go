@@ -21,10 +21,28 @@ import (
 	"sync"
 	"sync/atomic"
 
+	"crypto/rand"
+	"encoding/hex"
+
 	"cloud.google.com/go/storage"
-	"github.com/tus/tusd/internal/uid"
 	"github.com/tus/tusd/pkg/handler"
 )
+
+// uid returns a unique id. These ids consist of 128 bits from a
+// cryptographically strong pseudo-random generator and are like uuids, but
+// without the dashes and significant bits.
+//
+// See: http://en.wikipedia.org/wiki/UUID#Random_UUID_probability_of_duplicates
+func uid() string {
+	id := make([]byte, 16)
+	_, err := io.ReadFull(rand.Reader, id)
+	if err != nil {
+		// This is probably an appropriate way to handle errors from our source
+		// for random bits.
+		panic(err)
+	}
+	return hex.EncodeToString(id)
+}
 
 // See the handler.DataStore interface for documentation about the different
 // methods.
@@ -58,7 +76,7 @@ func (store GCSStore) UseIn(composer *handler.StoreComposer) {
 
 func (store GCSStore) NewUpload(ctx context.Context, info handler.FileInfo) (handler.Upload, error) {
 	if info.ID == "" {
-		info.ID = uid.Uid()
+		info.ID = uid()
 	}
 
 	info.Storage = map[string]string{
