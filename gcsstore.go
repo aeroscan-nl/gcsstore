@@ -16,6 +16,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"strconv"
 	"strings"
 	"sync"
@@ -90,6 +91,7 @@ func (store GCSStore) NewUpload(ctx context.Context, info handler.FileInfo) (han
 	}
 
 	err := store.writeInfo(ctx, store.keyWithPrefix(info.ID), info)
+	log.Printf("NewUpload writeInfo %v", err)
 	if err != nil {
 		return &gcsUpload{info.ID, &store}, err
 	}
