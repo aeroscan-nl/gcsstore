@@ -28,6 +28,10 @@ import (
 	"github.com/tus/tusd/pkg/handler"
 )
 
+func infoPath(key string) string {
+	return fmt.Sprintf("_info/%s.info", key)
+}
+
 // uid returns a unique id. These ids consist of 128 bits from a
 // cryptographically strong pseudo-random generator and are like uuids, but
 // without the dashes and significant bits.
@@ -156,7 +160,7 @@ func (upload gcsUpload) GetInfo(ctx context.Context) (handler.FileInfo, error) {
 	store := upload.store
 
 	info := handler.FileInfo{}
-	i := fmt.Sprintf("%s.info", store.keyWithPrefix(id))
+	i := infoPath(store.keyWithPrefix(id))
 
 	params := GCSObjectParams{
 		Bucket: store.Bucket,
@@ -259,7 +263,7 @@ func (store GCSStore) writeInfo(ctx context.Context, id string, info handler.Fil
 
 	r := bytes.NewReader(data)
 
-	i := fmt.Sprintf("%s.info", id)
+	i := infoPath(id)
 	params := GCSObjectParams{
 		Bucket: store.Bucket,
 		ID:     i,
